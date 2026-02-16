@@ -33,6 +33,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Emit machine-readable summary JSON instead of text output",
     )
+    inspect_parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Optional output file path for --json summary",
+    )
     return parser
 
 
@@ -46,19 +52,34 @@ def main(argv: list[str] | None = None) -> int:
             args.trace_file,
             cast(VerbosityArg, args.verbosity),
             as_json=args.json,
+            output_path=args.output,
         )
 
     parser.error("Unknown command")
     return 2
 
 
-def _run_inspect(trace_file: Path, verbosity: VerbosityArg, *, as_json: bool) -> int:
+def _run_inspect(
+    trace_file: Path,
+    verbosity: VerbosityArg,
+    *,
+    as_json: bool,
+    output_path: Path | None,
+) -> int:
     """Inspect a trace file and print summary + tree."""
+    if output_path is not None and not as_json:
+        raise ValueError("--output is only supported when --json is provided")
+
     trace = load_trace_json(trace_file)
     summary = _build_summary(trace)
 
     if as_json:
-        print(json.dumps(summary, ensure_ascii=True, sort_keys=True))
+        payload = json.dumps(summary, ensure_ascii=True, sort_keys=True)
+        if output_path is not None:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(payload + "\n", encoding="utf-8")
+        else:
+            print(payload)
         return 0
 
     status_counts = Counter(node.status for node in trace.nodes.values())

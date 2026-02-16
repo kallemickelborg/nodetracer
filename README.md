@@ -22,3 +22,9 @@ Emit machine-readable summary JSON:
 ```bash
 logtracer inspect path/to/trace.json --json
 ```
+
+Write JSON summary to a file (CI-friendly):
+
+```bash
+logtracer inspect path/to/trace.json --json --output artifacts/summary.json
+```
