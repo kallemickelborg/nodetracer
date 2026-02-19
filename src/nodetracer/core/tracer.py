@@ -42,8 +42,13 @@ class Tracer:
         self.storage: StorageBackend = storage or MemoryStore()
         self.hooks: list[TracerHook] = hooks or []
 
-    def trace(self, name: str, metadata: dict[str, object] | None = None) -> TraceContext:
-        return TraceContext(name=name, metadata=metadata, tracer=self)
+    def trace(
+        self,
+        name: str,
+        metadata: dict[str, object] | None = None,
+        session_id: str | None = None,
+    ) -> TraceContext:
+        return TraceContext(name=name, metadata=metadata, tracer=self, session_id=session_id)
 
 
 class TraceContext:
@@ -54,6 +59,7 @@ class TraceContext:
         name: str,
         tracer: Tracer,
         metadata: dict[str, object] | None = None,
+        session_id: str | None = None,
     ) -> None:
         self._tracer = tracer
         self._hooks = tracer.hooks
@@ -61,6 +67,7 @@ class TraceContext:
             name=name,
             metadata=metadata or {},
             start_time=datetime.now(UTC),
+            session_id=session_id,
         )
         self.root_span = Span(
             trace=self.trace_graph,

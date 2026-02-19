@@ -41,3 +41,22 @@ def test_save_and_load_trace_json_file(tmp_path: Path) -> None:
     loaded = load_trace_json(output)
     assert loaded.trace_id == trace.trace_id
     assert loaded.nodes.keys() == trace.nodes.keys()
+
+
+def test_session_id_roundtrip_in_json() -> None:
+    """session_id is serialized and deserialized correctly."""
+    trace = _build_trace()
+    trace.session_id = "my-session-456"
+    payload = trace_to_json(trace)
+    loaded = trace_from_json(payload)
+    assert loaded.session_id == "my-session-456"
+
+
+def test_load_old_json_without_session_id_defaults_to_none() -> None:
+    """Old trace JSON without session_id field loads with session_id=None."""
+    trace = _build_trace()
+    payload = trace_to_json(trace)
+    data = __import__("json").loads(payload)
+    del data["session_id"]
+    loaded = trace_from_json(__import__("json").dumps(data))
+    assert loaded.session_id is None
