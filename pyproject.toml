@@ -5,17 +5,35 @@ build-backend = "hatchling.build"
 [project]
 name = "logtracer"
 version = "0.1.0"
-description = "Visual graph-based Python logging and debugging framework."
+description = "Framework-agnostic tracing library for AI agents. Record, inspect, and debug agent execution as a structured graph."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
   { name = "Mickelborg" }
 ]
+keywords = ["ai", "agents", "tracing", "observability", "debugging", "llm", "graph"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Debuggers",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
 dependencies = [
   "pydantic>=2.11.0",
   "rich>=13.9.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Mickelborg/logtracer"
+Repository = "https://github.com/Mickelborg/logtracer"
+Issues = "https://github.com/Mickelborg/logtracer/issues"
 
 [project.optional-dependencies]
 dev = [
