@@ -9,7 +9,7 @@ Record, inspect, and debug AI agent execution — across any framework, any mode
 
 ## What is logtracer?
 
-AI agents plan, branch, retry, delegate, and fail — often invisibly. logtracer makes every step of that execution visible by recording it as a **temporal directed graph** that you can inspect, compare, and debug.
+AI agents plan, branch, retry, delegate, and fail — often invisibly. logtracer makes every step of that execution visible by recording it as a **temporal directed graph** that you can inspect, compare, and debug. This library provides node-level tracing throughout agent pipelines for improved observability and evaluation of agentic systems.
 
 | Layer | What it provides |
 |---|---|
