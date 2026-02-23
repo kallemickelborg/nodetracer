@@ -42,8 +42,8 @@ def _trace_with_nodes() -> TraceGraph:
 def test_render_trace_minimal_contains_structure() -> None:
     output = render_trace(_trace_with_nodes(), verbosity="minimal")
     assert "Trace: agent_run (5000ms)" in output
-    assert "[decision] plan (1000ms)" in output
-    assert "[tool_call] weather_api_call (2000ms)" in output
+    assert "[decision] plan +0.0s [1.0s]" in output
+    assert "[tool_call] weather_api_call +1.0s [2.0s]" in output
 
 
 def test_render_trace_full_contains_metadata_and_annotations() -> None:
@@ -104,6 +104,55 @@ def test_render_trace_edges_shown_inline() -> None:
     trace.add_edge(Edge(source_id=retry.id, target_id=original.id, edge_type=EdgeType.RETRY_OF))
     output = render_trace(trace, verbosity="minimal")
     assert "[retry of first_attempt]" in output
+
+
+def test_render_trace_temporal_offset_and_duration() -> None:
+    """Nodes show +offset [duration] relative to trace start."""
+    trace = _trace_with_nodes()
+    output = render_trace(trace, verbosity="minimal")
+    # root: starts at trace start (offset 0), duration 1s
+    assert "+0.0s [1.0s]" in output
+    # child: starts 1s after trace start, duration 2s
+    assert "+1.0s [2.0s]" in output
+
+
+def test_render_trace_temporal_sub_second_duration() -> None:
+    """Sub-second durations display as milliseconds."""
+    trace = TraceGraph(
+        name="fast_run",
+        start_time=datetime(2026, 1, 1, tzinfo=UTC),
+        end_time=datetime(2026, 1, 1, second=1, tzinfo=UTC),
+    )
+    node = Node(
+        sequence_number=0,
+        name="quick_op",
+        node_type="tool_call",
+        status=NodeStatus.COMPLETED,
+        start_time=datetime(2026, 1, 1, tzinfo=UTC),
+        end_time=datetime(2026, 1, 1, microsecond=240000, tzinfo=UTC),
+    )
+    trace.add_node(node)
+    output = render_trace(trace, verbosity="minimal")
+    assert "[240ms]" in output
+
+
+def test_render_trace_temporal_missing_timing() -> None:
+    """Nodes without timing data show [—] gracefully."""
+    trace = TraceGraph(
+        name="pending_run",
+        start_time=datetime(2026, 1, 1, tzinfo=UTC),
+        end_time=datetime(2026, 1, 1, second=1, tzinfo=UTC),
+    )
+    node = Node(
+        sequence_number=0,
+        name="pending_op",
+        node_type="custom",
+        status=NodeStatus.PENDING,
+    )
+    trace.add_node(node)
+    output = render_trace(trace, verbosity="minimal")
+    assert "[—]" in output
+    assert "+0.0s" not in output
 
 
 def test_render_trace_full_truncates_large_data() -> None:

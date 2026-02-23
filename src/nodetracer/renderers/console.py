@@ -76,8 +76,8 @@ def _add_node_branch(
     verbosity: Verbosity,
 ) -> None:
     icon = _status_icon(node.status)
-    duration = f"{node.duration_ms:.0f}ms" if node.duration_ms is not None else "running"
-    line = f"[{node.node_type}] {node.name} ({duration}) {icon}"
+    timing = _format_timing(node, trace)
+    line = f"[{node.node_type}] {node.name} {timing} {icon}"
     edge_labels = edges_by_source.get(node.id, [])
     if edge_labels:
         line += " " + " ".join(edge_labels)
@@ -107,6 +107,25 @@ def _add_node_branch(
 
     for child in children_by_parent.get(node.id, []):
         _add_node_branch(branch, child, children_by_parent, edges_by_source, trace, verbosity)
+
+
+def _format_timing(node: Node, trace: TraceGraph) -> str:
+    """Format offset from trace start + duration for a node line."""
+    parts: list[str] = []
+
+    if node.start_time is not None and trace.start_time is not None:
+        offset_s = (node.start_time - trace.start_time).total_seconds()
+        parts.append(f"+{offset_s:.1f}s")
+
+    if node.duration_ms is not None:
+        if node.duration_ms >= 1000:
+            parts.append(f"[{node.duration_ms / 1000:.1f}s]")
+        else:
+            parts.append(f"[{node.duration_ms:.0f}ms]")
+    else:
+        parts.append("[—]")
+
+    return " ".join(parts)
 
 
 def _format_data(data: dict[str, object]) -> str:

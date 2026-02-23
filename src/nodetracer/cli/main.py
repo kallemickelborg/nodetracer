@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import cast
 
 from .inspect_cmd import VerbosityArg, run_inspect
+from .view_cmd import run_view
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -32,6 +33,20 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional output file path for --json summary",
     )
+
+    view_parser = subparsers.add_parser("view", help="Start trace API server for the web viewer")
+    view_parser.add_argument("directory", type=Path, help="Directory containing trace JSON files")
+    view_parser.add_argument(
+        "--port",
+        type=int,
+        default=8765,
+        help="Port to bind the API server (default: 8765)",
+    )
+    view_parser.add_argument(
+        "--no-open",
+        action="store_true",
+        help="Don't auto-open the browser",
+    )
     return parser
 
 
@@ -45,6 +60,13 @@ def main(argv: list[str] | None = None) -> int:
             cast(VerbosityArg, args.verbosity),
             as_json=args.json,
             output_path=args.output,
+        )
+
+    if args.command == "view":
+        return run_view(
+            args.directory,
+            port=args.port,
+            open_browser=not args.no_open,
         )
 
     parser.error("Unknown command")
