@@ -9,32 +9,33 @@ Record, inspect, and debug AI agent execution — across any framework, any mode
 
 ## What is logtracer?
 
+Logtracer is a Python library you `pip install` and instrument in 3 lines.
+
 AI agents plan, branch, retry, delegate, and fail, often invisibly. logtracer makes every step of that execution visible by recording it as a **temporal directed graph** that you can inspect, compare, and debug. This library provides node-level tracing throughout agent pipelines for improved observability and evaluation of agentic systems.
 
-| Layer | What it provides |
-|---|---|
-| **Capture** | Context managers, decorators, and DI-based tracing that works with sync, async, and parallel execution |
-| **Data Model** | Typed nodes, edges, annotations, and metadata — capturing *what* happened, *why*, and *how long* |
-| **Storage** | Pluggable backends (memory, file, custom) with a protocol-based interface |
-| **Inspect** | CLI and Rich console renderer for terminal-based trace exploration |
-
-logtracer is **not** a platform, a SaaS, or a dashboard. It's a Python library you `pip install` and instrument in 3 lines. No accounts. No API keys. No vendor lock-in.
+| Layer           | What it provides                                                                                                                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Capture**     | Context managers, decorators, and DI-based tracing that works with sync, async, and parallel execution                                                                                                    |
+| **Data Model**  | Typed nodes, edges, annotations, and metadata — capturing _what_ happened, _why_, and _how long_                                                                                                          |
+| **Event Hooks** | Real-time lifecycle events (`on_node_started`, `on_node_completed`, `on_trace_completed`) via a pluggable `TracerHook` protocol — the foundation for CLI live views, web interfaces, and custom consumers |
+| **Storage**     | Pluggable backends (memory, file, custom) with a protocol-based interface                                                                                                                                 |
+| **Inspect**     | CLI and Rich console renderer for terminal-based trace exploration                                                                                                                                        |
 
 ## Why logtracer?
 
 Agentic software introduces a fundamental observability gap. Traditional tools weren't built for it:
 
-| Tool | The gap |
-|---|---|
-| **LangSmith, LangFuse, Arize Phoenix** | Tied to specific frameworks or require SaaS accounts. Not agnostic. |
-| **OpenTelemetry, Datadog** | Built for microservices. Flat trace timelines lose the branching, decision-making structure of agents. |
-| **Print statements** | The current reality for most agent developers. No structure, no context, doesn't scale. |
+| Tool                                   | The gap                                                                                                |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **LangSmith, LangFuse, Arize Phoenix** | Tied to specific frameworks or require SaaS accounts. Not agnostic.                                    |
+| **OpenTelemetry, Datadog**             | Built for microservices. Flat trace timelines lose the branching, decision-making structure of agents. |
+| **Print statements**                   | The current reality for most agent developers. No structure, no context, doesn't scale.                |
 
 logtracer fills this gap with a graph-native approach purpose-built for agent reasoning:
 
 - **Nodes** = discrete steps (LLM calls, tool invocations, decisions, retrieval, sub-agent delegations)
-- **Edges** = typed relationships (*why* steps connect: causation, data flow, retry, fallback, branch)
-- **Annotations** = developer intent (the *reasoning* behind decisions, not just inputs and outputs)
+- **Edges** = typed relationships (_why_ steps connect: causation, data flow, retry, fallback, branch)
+- **Annotations** = developer intent (the _reasoning_ behind decisions, not just inputs and outputs)
 - **Time** = first-class dimension (start/end timestamps on every node for performance analysis)
 
 ## Quick Start
@@ -88,7 +89,7 @@ Works with [Agno](https://github.com/agno-agi/agno), LangGraph, CrewAI, AutoGen,
 
 ```python
 # DI path (production)
-tracer = Tracer(config=TracerConfig(max_output_size=10_000), storage=FileStore("./traces"))
+tracer = Tracer(config=TracerConfig(max_output_size=10_000), storage=FileStore("./traces"), hooks=[my_hook])
 
 # Convenience path (prototyping)
 import logtracer
@@ -110,15 +111,38 @@ async with tracer.trace("parallel_search") as root:
 
 ### Rich edge semantics
 
-Edges aren't just "A → B". They encode the *type* of relationship:
+Edges aren't just "A → B". They encode the _type_ of relationship:
 
-| Edge type | Meaning |
-|---|---|
-| `CAUSED_BY` | A triggered B (control flow) |
-| `DATA_FLOW` | Output of A was input to B |
-| `BRANCHED_FROM` | B is a parallel branch spawned by A |
-| `RETRY_OF` | B is a retry attempt after A failed |
-| `FALLBACK_OF` | B ran because A failed (alternative path) |
+| Edge type       | Meaning                                   |
+| --------------- | ----------------------------------------- |
+| `CAUSED_BY`     | A triggered B (control flow)              |
+| `DATA_FLOW`     | Output of A was input to B                |
+| `BRANCHED_FROM` | B is a parallel branch spawned by A       |
+| `RETRY_OF`      | B is a retry attempt after A failed       |
+| `FALLBACK_OF`   | B ran because A failed (alternative path) |
+
+### Real-time event hooks
+
+Traces aren't just captured at the end — they stream lifecycle events as they happen. The `TracerHook` protocol lets any consumer observe the trace in real time: a CLI live view, a WebSocket-backed web interface, a monitoring callback, or all of them at once.
+
+```python
+from logtracer.core import Tracer, TracerConfig
+from logtracer.core.hooks import TracerHook
+
+class MyHook:
+    def on_node_started(self, node, trace_id):
+        print(f"[STARTED] {node.name}")
+
+    def on_node_completed(self, node, trace_id):
+        print(f"[DONE] {node.name} ({node.duration_ms:.0f}ms)")
+
+    def on_trace_completed(self, trace):
+        print(f"Trace {trace.trace_id} finished: {len(trace.nodes)} nodes")
+
+tracer = Tracer(hooks=[MyHook()])
+```
+
+Zero overhead when no hooks are registered. Broken hooks never crash the host.
 
 ### Developer annotations
 
@@ -207,12 +231,12 @@ logtracer inspect traces/abc123.json --json --output s.json  # write to file
 
 Runnable scripts in `examples/` validate the library against real agent patterns:
 
-| Example | Pattern | What it validates |
-|---|---|---|
-| `01_sequential_tool_calling.py` | Query → classify → tool → synthesize | Nesting, annotations, JSON roundtrip |
-| `02_parallel_execution.py` | Fan-out via `asyncio.gather()` | Context propagation across async tasks |
-| `03_retry_and_fallback.py` | Fail → retry → fail → fallback | `RETRY_OF` / `FALLBACK_OF` edges, mixed status |
-| `04_multi_agent_handoff.py` | Router delegates to specialist | Nested sub-agent spans, deep nesting |
+| Example                         | Pattern                              | What it validates                              |
+| ------------------------------- | ------------------------------------ | ---------------------------------------------- |
+| `01_sequential_tool_calling.py` | Query → classify → tool → synthesize | Nesting, annotations, JSON roundtrip           |
+| `02_parallel_execution.py`      | Fan-out via `asyncio.gather()`       | Context propagation across async tasks         |
+| `03_retry_and_fallback.py`      | Fail → retry → fail → fallback       | `RETRY_OF` / `FALLBACK_OF` edges, mixed status |
+| `04_multi_agent_handoff.py`     | Router delegates to specialist       | Nested sub-agent spans, deep nesting           |
 
 ```bash
 python examples/01_sequential_tool_calling.py
@@ -226,22 +250,23 @@ python examples/04_multi_agent_handoff.py
 ```
 src/logtracer/
   __init__.py     # Convenience API (configure, trace, trace_node)
+  exceptions.py   # LogtracerError, LogtracerLoadError
   models/         # Node, Edge, TraceGraph, enums (Pydantic v2)
-  core/           # Tracer, Span, TracerConfig, context propagation, decorators
+  core/           # Tracer, Span, TracerConfig, TracerHook, context propagation, decorators
   storage/        # StorageBackend protocol, MemoryStore, FileStore
-  serializers/    # JSON import/export
+  serializers/    # JSON import/export (forward-compatible reader)
   renderers/      # Rich console tree renderer
   cli/            # CLI entry points (inspect)
 ```
 
-| Component | Responsibility |
-|---|---|
-| **models/** | Data model — `Node`, `Edge`, `TraceGraph`. Pydantic v2, strict typing, JSON-serializable. |
-| **core/** | Runtime — `Tracer` (DI-constructed), `Span` (lifecycle), `TracerConfig`, context propagation via `contextvars`. |
-| **storage/** | Persistence — `StorageBackend` protocol with `MemoryStore` and `FileStore` implementations. Pluggable. |
-| **serializers/** | JSON import/export for trace data. The contract between capture and any downstream tool. |
-| **renderers/** | Output — `Rich`-based console tree renderer with minimal/standard/full verbosity. |
-| **cli/** | Terminal tooling — `logtracer inspect` for trace exploration. |
+| Component        | Responsibility                                                                                                                                 |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **models/**      | Data model — `Node`, `Edge`, `TraceGraph`. Pydantic v2, strict typing, forward-compatible (`extra="ignore"`), versioned schema.                |
+| **core/**        | Runtime — `Tracer` (DI-constructed), `Span` (lifecycle), `TracerConfig`, `TracerHook` (event protocol), context propagation via `contextvars`. |
+| **storage/**     | Persistence — `StorageBackend` protocol with `MemoryStore` and `FileStore` implementations. Pluggable.                                         |
+| **serializers/** | JSON import/export with schema version check. The contract between capture and any downstream tool.                                            |
+| **renderers/**   | Output — `Rich`-based console tree renderer with minimal/standard/full verbosity.                                                              |
+| **cli/**         | Terminal tooling — `logtracer inspect` for trace exploration. Graceful error handling (no raw tracebacks).                                     |
 
 ## Roadmap
 
@@ -254,23 +279,33 @@ src/logtracer/
 - [x] Rich console tree renderer (minimal / standard / full verbosity)
 - [x] JSON serialization with versioned schema (`v0.1.0`)
 - [x] Agent validation examples (sequential, parallel, retry/fallback, multi-agent handoff)
+- [x] Event hook protocol (`TracerHook` with `on_node_started`, `on_node_completed`, `on_node_failed`, `on_trace_completed`)
+- [x] Error-handling contract: runtime tracing errors never crash the host (OpenTelemetry-style)
+- [x] Forward-compatible schema reader (`extra="ignore"`, version check with warning)
 
-### Next
+### Next (core maturity → PyPI)
 
+- [ ] **Packaging artifacts** — `py.typed`, `CHANGELOG.md`, complete `__all__` exports, stability notice
+- [ ] **Edge-case tests** — storage failure, malformed JSON, schema mismatch, non-serializable data, hook dispatch
+- [ ] **CI/CD** — GitHub Actions test matrix + trusted publishing
 - [ ] **PyPI release** — publish `logtracer` as an installable package (`pip install logtracer`)
-- [ ] **Framework adapters** — Agno, LangGraph, CrewAI, AutoGen, Swarm
+
+### Mid-term (adapters and tooling)
+
+- [ ] **Distributed trace linking** — cross-process sub-agent tracing (`parent_trace_id`, context propagation)
+- [ ] **Framework adapters** — Agno, LangGraph, CrewAI, AutoGen (optional extras, not required for core)
+- [ ] **CLI live view** (`logtracer watch`) — real-time terminal trace via `TracerHook`
+- [ ] **Interactive trace viewer** — browser-based temporal swimlane via WebSocket hook
+
+### Long-term (production and ecosystem)
+
+- [ ] **Production hardening** — sampling, redaction, size limits, async export
 - [ ] **Auto-instrumentation** — patch OpenAI / Anthropic SDKs to auto-capture LLM calls
 - [ ] **Trace comparison** — load two traces, align by node name/type, highlight differences
-- [ ] **Interactive trace viewer** — browser-based temporal swimlane visualization
-- [ ] **Production hardening** — sampling, redaction, size limits, async export
-
-### Future
-
-- [ ] SQLite / PostgreSQL storage backends
-- [ ] Event hooks (`on("node.completed")` for custom alerting)
-- [ ] Streaming LLM response capture
+- [ ] Streaming LLM response capture (`on_node_updated` hook)
 - [ ] Human-in-the-loop tracing (pause/resume)
 - [ ] OpenTelemetry export bridge
+- [ ] Dynamic platform from hooks/injections (LangGraph Studio-like)
 
 ## Installing from Source
 
@@ -304,8 +339,10 @@ pytest && ruff check .
 
 ### Areas where help is most needed
 
+- **Edge-case testing** — storage failures, schema mismatches, concurrent traces
+- **Hook implementations** — terminal live view, WebSocket emitter, monitoring integrations
+- **Distributed tracing** — cross-process sub-agent context propagation
 - **Framework adapters** — integrations for Agno, LangGraph, CrewAI, AutoGen
-- **Auto-instrumentation** — patching LLM SDKs to auto-capture calls
 - **Storage backends** — SQLite, PostgreSQL, or cloud storage
 - **Documentation** — usage guides, tutorials, API reference
 - **Examples** — new agent patterns that exercise the tracing API
