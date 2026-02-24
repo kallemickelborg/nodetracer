@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from .core import Tracer, TracerConfig, trace_node
+from .core import NullHook, Tracer, TracerConfig, TracerHook, trace_node
 from .core.tracer import TraceContext
 from .storage import FileStore, MemoryStore, StorageBackend
 
@@ -33,6 +33,7 @@ def configure(
     redact_patterns: list[str] | None = None,
     max_output_size: int | None = None,
     max_input_size: int | None = None,
+    hooks: list[TracerHook] | None = None,
 ) -> Tracer:
     """Configure and return the default global Tracer instance."""
     global _default_tracer
@@ -43,7 +44,7 @@ def configure(
         max_output_size=max_output_size,
         max_input_size=max_input_size,
     )
-    _default_tracer = Tracer(config=config, storage=_resolve_storage(storage))
+    _default_tracer = Tracer(config=config, storage=_resolve_storage(storage), hooks=hooks)
     return _default_tracer
 
 
@@ -76,9 +77,11 @@ def _resolve_storage(storage: str | StorageBackend) -> StorageBackend:
 __all__ = [
     "FileStore",
     "MemoryStore",
+    "NullHook",
     "StorageBackend",
     "Tracer",
     "TracerConfig",
+    "TracerHook",
     "configure",
     "trace",
     "trace_node",

@@ -10,6 +10,7 @@ from types import TracebackType
 from ..models import Node, TraceGraph
 from ..storage import MemoryStore, StorageBackend
 from .context import push_current_node, push_current_trace, reset_current_node, reset_current_trace
+from .hooks import TracerHook
 from .span import Span
 from .tracer_config import TracerConfig
 
@@ -30,9 +31,11 @@ class Tracer:
         self,
         config: TracerConfig | None = None,
         storage: StorageBackend | None = None,
+        hooks: list[TracerHook] | None = None,
     ) -> None:
         self.config = config or TracerConfig()
         self.storage: StorageBackend = storage or MemoryStore()
+        self.hooks: list[TracerHook] = hooks or []
 
     def trace(self, name: str, metadata: dict[str, object] | None = None) -> TraceContext:
         return TraceContext(name=name, metadata=metadata, tracer=self)
@@ -48,6 +51,7 @@ class TraceContext:
         metadata: dict[str, object] | None = None,
     ) -> None:
         self._tracer = tracer
+        self._hooks = tracer.hooks
         self.trace_graph = TraceGraph(
             name=name,
             metadata=metadata or {},
@@ -58,6 +62,7 @@ class TraceContext:
             name=name,
             node_type="trace",
             config=tracer.config,
+            hooks=self._hooks,
         )
         self._trace_token: Token[TraceGraph | None] | None = None
         self._node_token: Token[Node | None] | None = None
@@ -72,6 +77,15 @@ class TraceContext:
                 "Trace data has been dropped.",
                 stacklevel=2,
             )
+        if self._hooks:
+            for hook in self._hooks:
+                try:
+                    hook.on_trace_completed(self.trace_graph)
+                except Exception:
+                    warnings.warn(
+                        "logtracer: hook error in on_trace_completed",
+                        stacklevel=2,
+                    )
 
     def __enter__(self) -> Span:
         self._trace_token = push_current_trace(self.trace_graph)

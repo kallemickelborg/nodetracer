@@ -5,14 +5,17 @@ from __future__ import annotations
 import json
 import traceback
 import warnings
-from collections.abc import Callable
 from contextvars import Token
 from datetime import UTC, datetime
 from types import TracebackType
+from typing import TYPE_CHECKING
 
 from ..models import Edge, EdgeType, Node, NodeStatus, TraceGraph
 from .context import get_current_node, push_current_node, reset_current_node
 from .tracer_config import TracerConfig
+
+if TYPE_CHECKING:
+    from .hooks import TracerHook
 
 
 class Span:
@@ -26,14 +29,14 @@ class Span:
         node_type: str = "custom",
         parent_node: Node | None = None,
         config: TracerConfig | None = None,
-        on_close: Callable[[Span], None] | None = None,
+        hooks: list[TracerHook] | None = None,
     ) -> None:
         self.trace = trace
         self.name = name
         self.node_type = node_type
         self.parent_node = parent_node if parent_node is not None else get_current_node()
         self._config = config or TracerConfig()
-        self._on_close = on_close
+        self._hooks = hooks or []
 
         self.node_record = Node(
             sequence_number=self.trace.next_sequence_number(),
@@ -85,6 +88,7 @@ class Span:
             node_type=node_type,
             parent_node=self.node_record,
             config=self._config,
+            hooks=self._hooks,
         )
 
     def __enter__(self) -> Span:
@@ -98,6 +102,8 @@ class Span:
             self.trace.add_edge(Edge(source_id=self.parent_node.id, target_id=self.node_record.id))
         self._node_token = push_current_node(self.node_record)
         self._entered = True
+        if self._hooks:
+            _dispatch_hooks(self._hooks, "on_node_started", self.node_record, self.trace.trace_id)
         return self
 
     def __exit__(
@@ -125,8 +131,13 @@ class Span:
         if self._node_token is not None:
             reset_current_node(self._node_token)
         self._entered = False
-        if self._on_close is not None:
-            self._on_close(self)
+        if self._hooks:
+            event = (
+                "on_node_failed"
+                if self.node_record.status == NodeStatus.FAILED
+                else "on_node_completed"
+            )
+            _dispatch_hooks(self._hooks, event, self.node_record, self.trace.trace_id)
         return False
 
     async def __aenter__(self) -> Span:
@@ -139,6 +150,17 @@ class Span:
         tb: TracebackType | None,
     ) -> bool:
         return self.__exit__(exc_type, exc, tb)
+
+
+def _dispatch_hooks(hooks: list[TracerHook], method: str, node: Node, trace_id: str) -> None:
+    for hook in hooks:
+        try:
+            getattr(hook, method)(node, trace_id)
+        except Exception:
+            warnings.warn(
+                f"logtracer: hook error in {method}",
+                stacklevel=3,
+            )
 
 
 def _safe_value(value: object) -> object:
