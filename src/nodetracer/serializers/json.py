@@ -6,7 +6,7 @@ import json
 import warnings
 from pathlib import Path
 
-from ..exceptions import LogtracerLoadError
+from ..exceptions import NodetracerLoadError
 from ..models import CURRENT_SCHEMA_VERSION, TraceGraph
 
 
@@ -17,13 +17,13 @@ def trace_to_json(trace: TraceGraph, *, indent: int | None = 2) -> str:
 def trace_from_json(payload: str) -> TraceGraph:
     """Parse a JSON string into a TraceGraph.
 
-    Raises ``LogtracerLoadError`` on invalid or unparseable input.
+    Raises ``NodetracerLoadError`` on invalid or unparseable input.
     Emits a warning if the trace's schema version differs from the current one.
     """
     try:
         graph = TraceGraph.model_validate_json(payload)
     except (json.JSONDecodeError, ValueError, Exception) as exc:
-        raise LogtracerLoadError(f"Failed to parse trace JSON: {exc}") from exc
+        raise NodetracerLoadError(f"Failed to parse trace JSON: {exc}") from exc
     if graph.schema_version != CURRENT_SCHEMA_VERSION:
         warnings.warn(
             f"Trace schema version {graph.schema_version!r} differs from "
@@ -44,7 +44,7 @@ def save_trace_json(trace: TraceGraph, path: str | Path, *, indent: int | None =
 def load_trace_json(path: str | Path) -> TraceGraph:
     """Load a trace from a JSON file.
 
-    Raises ``LogtracerLoadError`` on invalid content,
+    Raises ``NodetracerLoadError`` on invalid content,
     or ``FileNotFoundError`` / ``OSError`` if the file is inaccessible.
     """
     payload = Path(path).read_text(encoding="utf-8")

@@ -1,12 +1,12 @@
-"""logtracer — framework-agnostic AI agent tracing library.
+"""nodetracer — framework-agnostic AI agent tracing library.
 
 Convenience API (delegates to a default Tracer instance):
-    logtracer.configure(...)   -> set up default tracer
-    logtracer.trace(...)       -> start a trace session
-    logtracer.trace_node(...)  -> decorator for function-level tracing
+    nodetracer.configure(...)   -> set up default tracer
+    nodetracer.trace(...)       -> start a trace session
+    nodetracer.trace_node(...)  -> decorator for function-level tracing
 
 DI API (construct your own Tracer):
-    from logtracer.core import Tracer, TracerConfig
+    from nodetracer.core import Tracer, TracerConfig
     tracer = Tracer(config=TracerConfig(...), storage=my_store)
     with tracer.trace("run") as root:
         ...

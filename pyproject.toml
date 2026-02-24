@@ -3,7 +3,7 @@ requires = ["hatchling>=1.24.2"]
 build-backend = "hatchling.build"
 
 [project]
-name = "logtracer"
+name = "nodetracer"
 version = "0.1.0"
 description = "Framework-agnostic tracing library for AI agents. Record, inspect, and debug agent execution as a structured graph."
 readme = "README.md"
@@ -31,9 +31,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/kallemickelborg/logtracer"
-Repository = "https://github.com/kallemickelborg/logtracer"
-Issues = "https://github.com/kallemickelborg/logtracer/issues"
+Homepage = "https://github.com/kallemickelborg/nodetracer"
+Repository = "https://github.com/kallemickelborg/nodetracer"
+Issues = "https://github.com/kallemickelborg/nodetracer/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -52,10 +52,10 @@ dev = [
 ]
 
 [project.scripts]
-logtracer = "logtracer.cli.main:main"
+nodetracer = "nodetracer.cli.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/logtracer"]
+packages = ["src/nodetracer"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"

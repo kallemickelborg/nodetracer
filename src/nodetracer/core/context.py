@@ -12,11 +12,11 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 _current_trace: contextvars.ContextVar[TraceGraph | None] = contextvars.ContextVar(
-    "logtracer_current_trace",
+    "nodetracer_current_trace",
     default=None,
 )
 _current_node: contextvars.ContextVar[Node | None] = contextvars.ContextVar(
-    "logtracer_current_node",
+    "nodetracer_current_node",
     default=None,
 )
 

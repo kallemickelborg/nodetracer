@@ -8,7 +8,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Literal
 
-from ..exceptions import LogtracerLoadError
+from ..exceptions import NodetracerLoadError
 from ..models import NodeStatus, TraceGraph
 from ..renderers import render_trace
 from ..serializers import load_trace_json
@@ -31,7 +31,7 @@ def run_inspect(
     except FileNotFoundError:
         print(f"Error: file not found: {trace_file}", file=sys.stderr)
         return 1
-    except LogtracerLoadError as exc:
+    except NodetracerLoadError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
     except OSError as exc:

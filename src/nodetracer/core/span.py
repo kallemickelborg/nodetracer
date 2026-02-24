@@ -125,7 +125,7 @@ class Span:
             self.node_record.end_time = datetime.now(UTC)
         except Exception:
             warnings.warn(
-                f"logtracer: internal error finalizing span '{self.name}'",
+                f"nodetracer: internal error finalizing span '{self.name}'",
                 stacklevel=2,
             )
         if self._node_token is not None:
@@ -158,7 +158,7 @@ def _dispatch_hooks(hooks: list[TracerHook], method: str, node: Node, trace_id: 
             getattr(hook, method)(node, trace_id)
         except Exception:
             warnings.warn(
-                f"logtracer: hook error in {method}",
+                f"nodetracer: hook error in {method}",
                 stacklevel=3,
             )
 

@@ -1,19 +1,19 @@
-# logtracer
+# nodetracer
 
 **The tracing library for agentic software.**
 Record, inspect, and debug AI agent execution — across any framework, any model, any scale.
 
 [Documentation](#usage) &bull; [Examples](#agent-pattern-examples) &bull; [Quick Start](#quick-start) &bull; [Contributing](#contributing)
 
-> **Pre-1.0 notice:** logtracer is under active development. The API may change between minor versions. Pin to `logtracer~=0.1` for stability within a minor release.
+> **Pre-1.0 notice:** nodetracer is under active development. The API may change between minor versions. Pin to `nodetracer~=0.1` for stability within a minor release.
 
 ---
 
-## What is logtracer?
+## What is nodetracer?
 
-Logtracer is a Python library you `pip install` and instrument in 3 lines.
+Nodetracer is a Python library you `pip install` and instrument in 3 lines.
 
-AI agents plan, branch, retry, delegate, and fail, often invisibly. logtracer makes every step of that execution visible by recording it as a **temporal directed graph** that you can inspect, compare, and debug. This library provides node-level tracing throughout agent pipelines for improved observability and evaluation of agentic systems.
+AI agents plan, branch, retry, delegate, and fail, often invisibly. Nodetracer makes every step of that execution visible by recording it as a **temporal directed graph** that you can inspect, compare, and debug. This library provides node-level tracing throughout agent pipelines for improved observability and evaluation of agentic systems.
 
 | Layer           | What it provides                                                                                                                                                                                          |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -23,7 +23,7 @@ AI agents plan, branch, retry, delegate, and fail, often invisibly. logtracer ma
 | **Storage**     | Pluggable backends (memory, file, custom) with a protocol-based interface                                                                                                                                 |
 | **Inspect**     | CLI and Rich console renderer for terminal-based trace exploration                                                                                                                                        |
 
-## Why logtracer?
+## Why nodetracer?
 
 Agentic software introduces a fundamental observability gap. Traditional tools weren't built for it:
 
@@ -33,7 +33,7 @@ Agentic software introduces a fundamental observability gap. Traditional tools w
 | **OpenTelemetry, Datadog**             | Built for microservices. Flat trace timelines lose the branching, decision-making structure of agents. |
 | **Print statements**                   | The current reality for most agent developers. No structure, no context, doesn't scale.                |
 
-logtracer fills this gap with a graph-native approach purpose-built for agent reasoning:
+nodetracer fills this gap with a graph-native approach purpose-built for agent reasoning:
 
 - **Nodes** = discrete steps (LLM calls, tool invocations, decisions, retrieval, sub-agent delegations)
 - **Edges** = typed relationships (_why_ steps connect: causation, data flow, retry, fallback, branch)
@@ -45,8 +45,8 @@ logtracer fills this gap with a graph-native approach purpose-built for agent re
 Instrument a tool-calling agent and get a structured trace in ~10 lines:
 
 ```python
-from logtracer.core import Tracer, TracerConfig
-from logtracer.storage import FileStore
+from nodetracer.core import Tracer, TracerConfig
+from nodetracer.storage import FileStore
 
 tracer = Tracer(
     config=TracerConfig(),
@@ -67,7 +67,7 @@ with tracer.trace("weather_agent") as root:
 Then inspect it from the terminal:
 
 ```bash
-logtracer inspect traces/<trace-id>.json
+nodetracer inspect traces/<trace-id>.json
 ```
 
 ```
@@ -94,8 +94,8 @@ Works with [Agno](https://github.com/agno-agi/agno), LangGraph, CrewAI, AutoGen,
 tracer = Tracer(config=TracerConfig(max_output_size=10_000), storage=FileStore("./traces"), hooks=[my_hook])
 
 # Convenience path (prototyping)
-import logtracer
-logtracer.configure(storage="file://./traces")
+import nodetracer
+nodetracer.configure(storage="file://./traces")
 ```
 
 ### Async-native
@@ -128,8 +128,8 @@ Edges aren't just "A → B". They encode the _type_ of relationship:
 Traces aren't just captured at the end — they stream lifecycle events as they happen. The `TracerHook` protocol lets any consumer observe the trace in real time: a CLI live view, a WebSocket-backed web interface, a monitoring callback, or all of them at once.
 
 ```python
-from logtracer.core import Tracer, TracerConfig
-from logtracer.core.hooks import TracerHook
+from nodetracer.core import Tracer, TracerConfig
+from nodetracer.core.hooks import TracerHook
 
 class MyHook:
     def on_node_started(self, node, trace_id):
@@ -159,7 +159,7 @@ with root.node("route", node_type="decision") as node:
 ## Install
 
 ```bash
-pip install logtracer
+pip install nodetracer
 ```
 
 Development setup:
@@ -174,8 +174,8 @@ uv sync --group dev
 ### DI API (recommended for production and framework integration)
 
 ```python
-from logtracer.core import Tracer, TracerConfig
-from logtracer.storage import FileStore
+from nodetracer.core import Tracer, TracerConfig
+from nodetracer.storage import FileStore
 
 tracer = Tracer(
     config=TracerConfig(max_output_size=10_000),
@@ -196,11 +196,11 @@ with tracer.trace("my_agent") as root:
 ### Convenience API (quick scripts)
 
 ```python
-import logtracer
+import nodetracer
 
-logtracer.configure(storage="file://./traces")
+nodetracer.configure(storage="file://./traces")
 
-with logtracer.trace("quick_run") as root:
+with nodetracer.trace("quick_run") as root:
     with root.node("step", node_type="tool_call") as step:
         step.input(location="Paris")
         step.output(temp=18)
@@ -209,8 +209,8 @@ with logtracer.trace("quick_run") as root:
 ### Function decorator
 
 ```python
-from logtracer import trace
-from logtracer.core import trace_node
+from nodetracer import trace
+from nodetracer.core import trace_node
 
 @trace_node(node_type="tool_call")
 def fetch_weather(location: str) -> dict:
@@ -223,10 +223,10 @@ with trace("run") as root:
 ## CLI
 
 ```bash
-logtracer inspect traces/abc123.json                         # summary + tree
-logtracer inspect traces/abc123.json --verbosity full        # with input/output data
-logtracer inspect traces/abc123.json --json                  # machine-readable summary
-logtracer inspect traces/abc123.json --json --output s.json  # write to file
+nodetracer inspect traces/abc123.json                         # summary + tree
+nodetracer inspect traces/abc123.json --verbosity full        # with input/output data
+nodetracer inspect traces/abc123.json --json                  # machine-readable summary
+nodetracer inspect traces/abc123.json --json --output s.json  # write to file
 ```
 
 ## Agent Pattern Examples
@@ -250,9 +250,9 @@ python examples/04_multi_agent_handoff.py
 ## Architecture
 
 ```
-src/logtracer/
+src/nodetracer/
   __init__.py     # Convenience API (configure, trace, trace_node)
-  exceptions.py   # LogtracerError, LogtracerLoadError
+  exceptions.py   # NodetracerError, NodetracerLoadError
   models/         # Node, Edge, TraceGraph, enums (Pydantic v2)
   core/           # Tracer, Span, TracerConfig, TracerHook, context propagation, decorators
   storage/        # StorageBackend protocol, MemoryStore, FileStore
@@ -268,7 +268,7 @@ src/logtracer/
 | **storage/**     | Persistence — `StorageBackend` protocol with `MemoryStore` and `FileStore` implementations. Pluggable.                                         |
 | **serializers/** | JSON import/export with schema version check. The contract between capture and any downstream tool.                                            |
 | **renderers/**   | Output — `Rich`-based console tree renderer with minimal/standard/full verbosity.                                                              |
-| **cli/**         | Terminal tooling — `logtracer inspect` for trace exploration. Graceful error handling (no raw tracebacks).                                     |
+| **cli/**         | Terminal tooling — `nodetracer inspect` for trace exploration. Graceful error handling (no raw tracebacks).                                    |
 
 ## Roadmap
 
@@ -290,13 +290,13 @@ src/logtracer/
 - [ ] **Packaging artifacts** — `py.typed`, `CHANGELOG.md`, complete `__all__` exports, stability notice
 - [ ] **Edge-case tests** — storage failure, malformed JSON, schema mismatch, non-serializable data, hook dispatch
 - [ ] **CI/CD** — GitHub Actions test matrix + trusted publishing
-- [ ] **PyPI release** — publish `logtracer` as an installable package (`pip install logtracer`)
+- [ ] **PyPI release** — publish `nodetracer` as an installable package (`pip install nodetracer`)
 
 ### Mid-term (adapters and tooling)
 
 - [ ] **Distributed trace linking** — cross-process sub-agent tracing (`parent_trace_id`, context propagation)
 - [ ] **Framework adapters** — Agno, LangGraph, CrewAI, AutoGen (optional extras, not required for core)
-- [ ] **CLI live view** (`logtracer watch`) — real-time terminal trace via `TracerHook`
+- [ ] **CLI live view** (`nodetracer watch`) — real-time terminal trace via `TracerHook`
 - [ ] **Interactive trace viewer** — browser-based temporal swimlane via WebSocket hook
 
 ### Long-term (production and ecosystem)
@@ -311,17 +311,17 @@ src/logtracer/
 
 ## Installing from Source
 
-logtracer is not yet published on PyPI. To install from the repository:
+nodetracer is not yet published on PyPI. To install from the repository:
 
 ```bash
-pip install git+https://github.com/kallemickelborg/logtracer.git
+pip install git+https://github.com/kallemickelborg/nodetracer.git
 ```
 
 Or clone and install locally:
 
 ```bash
-git clone https://github.com/kallemickelborg/logtracer.git
-cd logtracer
+git clone https://github.com/kallemickelborg/nodetracer.git
+cd nodetracer
 pip install -e .
 ```
 
@@ -332,8 +332,8 @@ Contributions are welcome — whether it's bug reports, feature ideas, documenta
 ### Quick setup
 
 ```bash
-git clone https://github.com/kallemickelborg/logtracer.git
-cd logtracer
+git clone https://github.com/kallemickelborg/nodetracer.git
+cd nodetracer
 uv venv && source .venv/bin/activate
 uv sync --group dev
 pytest && ruff check .

@@ -1,4 +1,4 @@
-"""Command line interface for logtracer."""
+"""Command line interface for nodetracer."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from .inspect_cmd import VerbosityArg, run_inspect
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="logtracer")
+    parser = argparse.ArgumentParser(prog="nodetracer")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     inspect_parser = subparsers.add_parser("inspect", help="Inspect a trace JSON file")

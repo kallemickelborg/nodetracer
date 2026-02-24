@@ -1,6 +1,6 @@
-# Contributing to logtracer
+# Contributing to nodetracer
 
-Thanks for your interest in contributing. logtracer is an open-source project and welcomes contributions of all kinds — bug reports, feature requests, documentation improvements, and code.
+Thanks for your interest in contributing. nodetracer is an open-source project and welcomes contributions of all kinds — bug reports, feature requests, documentation improvements, and code.
 
 ## Getting Started
 
@@ -12,8 +12,8 @@ Thanks for your interest in contributing. logtracer is an open-source project an
 ### Setup
 
 ```bash
-git clone https://github.com/kallemickelborg/logtracer.git
-cd logtracer
+git clone https://github.com/kallemickelborg/nodetracer.git
+cd nodetracer
 uv venv && source .venv/bin/activate
 uv sync --group dev
 ```
@@ -30,7 +30,7 @@ ruff format --check .     # format check
 
 ### Reporting Bugs
 
-Open an [issue](https://github.com/kallemickelborg/logtracer/issues) with:
+Open an [issue](https://github.com/kallemickelborg/nodetracer/issues) with:
 
 - What you expected to happen
 - What actually happened
@@ -87,7 +87,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 ## Project Structure
 
 ```
-src/logtracer/
+src/nodetracer/
   models/       # Data model (Node, Edge, TraceGraph)
   core/         # Runtime (Tracer, Span, context propagation)
   storage/      # StorageBackend protocol + implementations

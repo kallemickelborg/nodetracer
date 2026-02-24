@@ -9,7 +9,12 @@ from types import TracebackType
 
 from ..models import Node, TraceGraph
 from ..storage import MemoryStore, StorageBackend
-from .context import push_current_node, push_current_trace, reset_current_node, reset_current_trace
+from .context import (
+    push_current_node,
+    push_current_trace,
+    reset_current_node,
+    reset_current_trace,
+)
 from .hooks import TracerHook
 from .span import Span
 from .tracer_config import TracerConfig
@@ -73,7 +78,7 @@ class TraceContext:
             self._tracer.storage.save(self.trace_graph)
         except Exception:
             warnings.warn(
-                f"logtracer: failed to save trace {self.trace_graph.trace_id}. "
+                f"nodetracer: failed to save trace {self.trace_graph.trace_id}. "
                 "Trace data has been dropped.",
                 stacklevel=2,
             )
@@ -83,7 +88,7 @@ class TraceContext:
                     hook.on_trace_completed(self.trace_graph)
                 except Exception:
                     warnings.warn(
-                        "logtracer: hook error in on_trace_completed",
+                        "nodetracer: hook error in on_trace_completed",
                         stacklevel=2,
                     )
 
