@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from ..exceptions import LogtracerLoadError
 from ..models import TraceGraph
 
 
@@ -13,7 +14,14 @@ def trace_to_json(trace: TraceGraph, *, indent: int | None = 2) -> str:
 
 
 def trace_from_json(payload: str) -> TraceGraph:
-    return TraceGraph.model_validate_json(payload)
+    """Parse a JSON string into a TraceGraph.
+
+    Raises ``LogtracerLoadError`` on invalid or unparseable input.
+    """
+    try:
+        return TraceGraph.model_validate_json(payload)
+    except (json.JSONDecodeError, ValueError, Exception) as exc:
+        raise LogtracerLoadError(f"Failed to parse trace JSON: {exc}") from exc
 
 
 def save_trace_json(trace: TraceGraph, path: str | Path, *, indent: int | None = 2) -> Path:
@@ -24,6 +32,10 @@ def save_trace_json(trace: TraceGraph, path: str | Path, *, indent: int | None =
 
 
 def load_trace_json(path: str | Path) -> TraceGraph:
+    """Load a trace from a JSON file.
+
+    Raises ``LogtracerLoadError`` on invalid content,
+    or ``FileNotFoundError`` / ``OSError`` if the file is inaccessible.
+    """
     payload = Path(path).read_text(encoding="utf-8")
-    json.loads(payload)
     return trace_from_json(payload)

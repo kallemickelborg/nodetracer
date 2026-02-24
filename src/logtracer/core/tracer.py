@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from contextvars import Token
 from datetime import UTC, datetime
 from types import TracebackType
@@ -14,7 +15,16 @@ from .tracer_config import TracerConfig
 
 
 class Tracer:
-    """Owns its config and storage. Construct via DI or use the convenience layer."""
+    """Owns its config and storage. Construct via DI or use the convenience layer.
+
+    Error-handling contract
+    ----------------------
+    - Configuration errors (invalid ``TracerConfig``, non-writable storage path)
+      raise immediately — these are programming errors the caller should fix.
+    - Runtime tracing errors (``storage.save()`` failure, internal span
+      accounting) are swallowed with ``warnings.warn`` so that the host
+      application is never affected by tracing infrastructure.
+    """
 
     def __init__(
         self,
@@ -54,7 +64,14 @@ class TraceContext:
 
     def _finalize(self) -> None:
         self.trace_graph.end_time = datetime.now(UTC)
-        self._tracer.storage.save(self.trace_graph)
+        try:
+            self._tracer.storage.save(self.trace_graph)
+        except Exception:
+            warnings.warn(
+                f"logtracer: failed to save trace {self.trace_graph.trace_id}. "
+                "Trace data has been dropped.",
+                stacklevel=2,
+            )
 
     def __enter__(self) -> Span:
         self._trace_token = push_current_trace(self.trace_graph)

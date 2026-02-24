@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 from typing import Literal
 
+from ..exceptions import LogtracerLoadError
 from ..models import NodeStatus, TraceGraph
 from ..renderers import render_trace
 from ..serializers import load_trace_json
@@ -24,7 +26,17 @@ def run_inspect(
     if output_path is not None and not as_json:
         raise ValueError("--output is only supported when --json is provided")
 
-    trace = load_trace_json(trace_file)
+    try:
+        trace = load_trace_json(trace_file)
+    except FileNotFoundError:
+        print(f"Error: file not found: {trace_file}", file=sys.stderr)
+        return 1
+    except LogtracerLoadError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    except OSError as exc:
+        print(f"Error reading file: {exc}", file=sys.stderr)
+        return 1
     summary = _build_summary(trace)
 
     if as_json:
