@@ -18,7 +18,7 @@ class EdgeType(StrEnum):
 class Edge(BaseModel):
     """Directional relationship between two nodes."""
 
-    model_config = ConfigDict(strict=True)
+    model_config = ConfigDict(strict=True, extra="ignore")
 
     source_id: str
     target_id: str

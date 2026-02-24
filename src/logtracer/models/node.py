@@ -32,7 +32,7 @@ class NodeType(StrEnum):
 class Node(BaseModel):
     """Single unit of execution in a trace."""
 
-    model_config = ConfigDict(strict=True)
+    model_config = ConfigDict(strict=True, extra="ignore")
 
     id: str = Field(default_factory=lambda: uuid4().hex)
     sequence_number: int

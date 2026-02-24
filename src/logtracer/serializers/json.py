@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import json
+import warnings
 from pathlib import Path
 
 from ..exceptions import LogtracerLoadError
-from ..models import TraceGraph
+from ..models import CURRENT_SCHEMA_VERSION, TraceGraph
 
 
 def trace_to_json(trace: TraceGraph, *, indent: int | None = 2) -> str:
@@ -17,11 +18,20 @@ def trace_from_json(payload: str) -> TraceGraph:
     """Parse a JSON string into a TraceGraph.
 
     Raises ``LogtracerLoadError`` on invalid or unparseable input.
+    Emits a warning if the trace's schema version differs from the current one.
     """
     try:
-        return TraceGraph.model_validate_json(payload)
+        graph = TraceGraph.model_validate_json(payload)
     except (json.JSONDecodeError, ValueError, Exception) as exc:
         raise LogtracerLoadError(f"Failed to parse trace JSON: {exc}") from exc
+    if graph.schema_version != CURRENT_SCHEMA_VERSION:
+        warnings.warn(
+            f"Trace schema version {graph.schema_version!r} differs from "
+            f"current {CURRENT_SCHEMA_VERSION!r}. "
+            "Some fields may be missing or ignored.",
+            stacklevel=2,
+        )
+    return graph
 
 
 def save_trace_json(trace: TraceGraph, path: str | Path, *, indent: int | None = 2) -> Path:

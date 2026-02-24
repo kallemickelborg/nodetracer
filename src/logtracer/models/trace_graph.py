@@ -10,13 +10,15 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, computed_field, 
 from .edge import Edge
 from .node import Node, NodeStatus
 
+CURRENT_SCHEMA_VERSION = "0.1.0"
+
 
 class TraceGraph(BaseModel):
     """Root trace structure containing nodes and edges."""
 
-    model_config = ConfigDict(strict=True)
+    model_config = ConfigDict(strict=True, extra="ignore")
 
-    schema_version: str = "0.1.0"
+    schema_version: str = CURRENT_SCHEMA_VERSION
     trace_id: str = Field(default_factory=lambda: uuid4().hex)
     name: str = ""
     nodes: dict[str, Node] = Field(default_factory=dict)
