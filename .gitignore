@@ -1,9 +1,11 @@
+# OS
+.DS_Store
+
 # Folders
 .plans/
 .cursor/
-examples/
 artifacts/
-tests/
+examples/
 plans/
 docs/
 
