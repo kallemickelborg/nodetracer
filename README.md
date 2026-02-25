@@ -3,7 +3,7 @@
 **The tracing library for agentic software.**
 Record, inspect, and debug AI agent execution — across any framework, any model, any scale.
 
-[Documentation](#usage) &bull; [Examples](#agent-pattern-examples) &bull; [Quick Start](#quick-start) &bull; [Contributing](#contributing)
+[Documentation](#usage) &bull; [Integration Guide](docs/integration-guide.md) &bull; [Examples](#agent-pattern-examples) &bull; [Quick Start](#quick-start) &bull; [Contributing](#contributing)
 
 > **Pre-1.0 notice:** nodetracer is under active development. The API may change between minor versions. Pin to `nodetracer~=0.1` for stability within a minor release.
 
@@ -216,9 +216,16 @@ from nodetracer.core import trace_node
 def fetch_weather(location: str) -> dict:
     return {"temp": 18}
 
+@trace_node(node_type="llm_call")
+def classify_intent(query: str) -> str:
+    return "weather_lookup"
+
 with trace("run") as root:
-    fetch_weather("Paris")  # automatically traced as a child node
+    intent = classify_intent("What's the weather?")
+    result = fetch_weather("Paris")
 ```
+
+For custom storage backends, event hooks, and adapter implementation, see the **[Integration Guide](docs/integration-guide.md)**.
 
 ## CLI
 
@@ -285,14 +292,15 @@ src/nodetracer/
 - [x] Error-handling contract: runtime tracing errors never crash the host (OpenTelemetry-style)
 - [x] Forward-compatible schema reader (`extra="ignore"`, version check with warning)
 
-### Next (core maturity → PyPI)
+### Done (post-release)
 
-- [ ] **Packaging artifacts** — `py.typed`, `CHANGELOG.md`, complete `__all__` exports, stability notice
-- [ ] **Edge-case tests** — storage failure, malformed JSON, schema mismatch, non-serializable data, hook dispatch
-- [ ] **CI/CD** — GitHub Actions test matrix + trusted publishing
-- [ ] **PyPI release** — publish `nodetracer` as an installable package (`pip install nodetracer`)
+- [x] **Packaging artifacts** — `py.typed`, `CHANGELOG.md`, complete `__all__` exports, stability notice
+- [x] **Edge-case tests** — storage failure, malformed JSON, schema mismatch, non-serializable data, hook dispatch (39 tests)
+- [x] **CI/CD** — GitHub Actions test matrix (Python 3.11/3.12/3.13) + trusted publishing
+- [x] **PyPI release** — `pip install nodetracer` (v0.1.0)
+- [x] **Integration guide** — three integration levels, custom storage protocol, adapter implementation guide
 
-### Mid-term (adapters and tooling)
+### Next
 
 - [ ] **Distributed trace linking** — cross-process sub-agent tracing (`parent_trace_id`, context propagation)
 - [ ] **Framework adapters** — Agno, LangGraph, CrewAI, AutoGen (optional extras, not required for core)
@@ -309,20 +317,12 @@ src/nodetracer/
 - [ ] OpenTelemetry export bridge
 - [ ] Dynamic platform from hooks/injections (LangGraph Studio-like)
 
-## Installing from Source
+## Installing from source
 
-nodetracer is not yet published on PyPI. To install from the repository:
+To install the latest development version from the repository:
 
 ```bash
 pip install git+https://github.com/kallemickelborg/nodetracer.git
-```
-
-Or clone and install locally:
-
-```bash
-git clone https://github.com/kallemickelborg/nodetracer.git
-cd nodetracer
-pip install -e .
 ```
 
 ## Contributing
