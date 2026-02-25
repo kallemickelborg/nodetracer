@@ -129,9 +129,7 @@ def test_cli_inspect_nonexistent_file(capsys: pytest.CaptureFixture[str]) -> Non
     assert "not found" in captured.err.lower() or "error" in captured.err.lower()
 
 
-def test_cli_inspect_corrupt_file(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_cli_inspect_corrupt_file(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     bad_file = tmp_path / "corrupt.json"
     bad_file.write_text("NOT JSON AT ALL")
 
