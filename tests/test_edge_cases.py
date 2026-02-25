@@ -38,7 +38,10 @@ def test_storage_failure_does_not_propagate() -> None:
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        with tracer.trace("will_fail") as root, root.node("step", node_type="tool_call"):
+        with (
+            tracer.trace("will_fail") as root,
+            root.node("step", node_type="tool_call"),
+        ):
             pass
 
     warning_messages = [str(w.message) for w in caught]
@@ -149,7 +152,10 @@ async def test_concurrent_traces_are_independent() -> None:
     tracer = Tracer(storage=store)
 
     async def run_trace(name: str) -> TraceGraph:
-        async with tracer.trace(name) as root, root.node(f"{name}_step", node_type="tool_call"):
+        async with (
+            tracer.trace(name) as root,
+            root.node(f"{name}_step", node_type="tool_call"),
+        ):
             await asyncio.sleep(0)
         return root.trace
 
@@ -255,7 +261,10 @@ def test_broken_hook_does_not_crash_trace() -> None:
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        with tracer.trace("resilient") as root, root.node("step", node_type="tool_call"):
+        with (
+            tracer.trace("resilient") as root,
+            root.node("step", node_type="tool_call"),
+        ):
             pass
 
     assert root.trace.name == "resilient"
