@@ -71,9 +71,7 @@ def main() -> None:
     assert fallback_edges[0].source_id == attempt1.node_record.id
     assert fallback_edges[0].target_id == fallback.node_record.id
 
-    attempt1_node = next(
-        n for n in graph.nodes.values() if n.name == "api_call_attempt_1"
-    )
+    attempt1_node = next(n for n in graph.nodes.values() if n.name == "api_call_attempt_1")
     assert attempt1_node.error == "ConnectionTimeout"
     assert attempt1_node.error_type == "TimeoutError"
     assert len(attempt1_node.annotations) == 1

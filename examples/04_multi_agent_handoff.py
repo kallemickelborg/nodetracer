@@ -70,12 +70,10 @@ def main() -> None:
     assert agent_node.node_type == "sub_agent"
     assert agent_node.depth == 1
 
-    specialist_children = [
-        n for n in graph.nodes.values() if n.parent_id == agent_node.id
-    ]
-    assert (
-        len(specialist_children) == 3
-    ), f"Expected 3 specialist children, got {len(specialist_children)}"
+    specialist_children = [n for n in graph.nodes.values() if n.parent_id == agent_node.id]
+    assert len(specialist_children) == 3, (
+        f"Expected 3 specialist children, got {len(specialist_children)}"
+    )
     child_names = sorted(n.name for n in specialist_children)
     assert child_names == ["search_papers", "specialist_plan", "summarize"]
 

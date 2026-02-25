@@ -24,9 +24,7 @@ def main() -> None:
             classify.input(query="What's the weather in Paris?", model="gpt-4o")
             intent = "weather_lookup"
             classify.output(intent=intent, confidence=0.95)
-            classify.annotate(
-                "High confidence weather intent — routing to weather tool"
-            )
+            classify.annotate("High confidence weather intent — routing to weather tool")
             classify.metadata(tokens_used=42)
 
         with root.node("weather_api", node_type="tool_call") as tool:
@@ -43,16 +41,12 @@ def main() -> None:
     graph = root.trace
 
     # -- Assertions --
-    assert (
-        len(graph.nodes) == 4
-    ), f"Expected 4 nodes (root + 3 steps), got {len(graph.nodes)}"
+    assert len(graph.nodes) == 4, f"Expected 4 nodes (root + 3 steps), got {len(graph.nodes)}"
     assert graph.name == "weather_agent"
     assert graph.metadata["user_id"] == "u_123"
     assert all(n.status == NodeStatus.COMPLETED for n in graph.nodes.values())
 
-    node_names = [
-        n.name for n in sorted(graph.nodes.values(), key=lambda n: n.sequence_number)
-    ]
+    node_names = [n.name for n in sorted(graph.nodes.values(), key=lambda n: n.sequence_number)]
     assert node_names == [
         "weather_agent",
         "classify_intent",
@@ -62,9 +56,7 @@ def main() -> None:
 
     classify_node = next(n for n in graph.nodes.values() if n.name == "classify_intent")
     assert classify_node.input_data["query"] == "What's the weather in Paris?"
-    assert classify_node.annotations == [
-        "High confidence weather intent — routing to weather tool"
-    ]
+    assert classify_node.annotations == ["High confidence weather intent — routing to weather tool"]
     assert classify_node.metadata["tokens_used"] == 42
 
     assert len(graph.edges) == 3

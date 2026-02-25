@@ -42,9 +42,7 @@ async def main() -> None:
 
         with root.node("synthesize", node_type="llm_call") as synth:
             synth.input(sources=[r["source"] for r in results])
-            synth.output(
-                response="Python is great for AI, Rust for systems, Go for services."
-            )
+            synth.output(response="Python is great for AI, Rust for systems, Go for services.")
 
     graph = root.trace
 
@@ -56,9 +54,7 @@ async def main() -> None:
     assert len(search_nodes) == 3
 
     sequence_numbers = {n.sequence_number for n in search_nodes}
-    assert (
-        len(sequence_numbers) == 3
-    ), "Each parallel node must have a unique sequence number"
+    assert len(sequence_numbers) == 3, "Each parallel node must have a unique sequence number"
 
     assert all(n.parent_id == root.node_record.id for n in search_nodes)
 
