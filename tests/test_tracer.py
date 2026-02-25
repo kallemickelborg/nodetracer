@@ -90,10 +90,9 @@ def test_trace_retry_and_fallback_edges_are_recorded() -> None:
 def test_trace_payload_truncation_from_config() -> None:
     configure(max_input_size=6, max_output_size=8)
 
-    with trace("truncate_run") as root:
-        with root.node("payload_step", node_type="custom") as payload:
-            payload.input(query="1234567890")
-            payload.output(result="abcdefghijk")
+    with trace("truncate_run") as root, root.node("payload_step", node_type="custom") as payload:
+        payload.input(query="1234567890")
+        payload.output(result="abcdefghijk")
 
     node = next(node for node in root.trace.nodes.values() if node.name == "payload_step")
     assert isinstance(node.input_data["query"], str)
@@ -108,9 +107,8 @@ def test_tracer_di_construction() -> None:
     config = TracerConfig(max_input_size=5)
     tracer = Tracer(config=config, storage=store)
 
-    with tracer.trace("di_run") as root:
-        with root.node("step", node_type="tool_call") as step:
-            step.input(data="abcdefgh")
+    with tracer.trace("di_run") as root, root.node("step", node_type="tool_call") as step:
+        step.input(data="abcdefgh")
 
     assert len(store.list_traces()) == 1
     loaded = store.load(root.trace.trace_id)

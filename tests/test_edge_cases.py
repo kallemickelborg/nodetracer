@@ -6,14 +6,12 @@ import asyncio
 import json
 import warnings
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
 from nodetracer import trace
 from nodetracer.cli import main
-from nodetracer.core import Tracer, TracerConfig
-from nodetracer.core.hooks import NullHook, TracerHook
+from nodetracer.core import Tracer
 from nodetracer.exceptions import NodetracerLoadError
 from nodetracer.models import Node, NodeStatus, TraceGraph
 from nodetracer.serializers import load_trace_json, save_trace_json, trace_from_json
