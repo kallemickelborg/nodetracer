@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-02-25
+
+### Added
+
+- **Auto-capturing `@trace_node` decorator**: New `capture_args` and `capture_return` parameters on `@trace_node()`. When `capture_args=True`, function arguments are automatically recorded as span input data (`self` is excluded for methods). When `capture_return=True`, the return value is recorded as span output data. Dict returns are spread into output fields; scalar returns use the `return_value` key.
+
 ## [0.1.0] - 2026-02-24
 
 Initial release.
@@ -24,4 +30,5 @@ Initial release.
 - **Packaging**: `py.typed` marker (PEP 561), complete `__all__` exports, typed inline annotations.
 - **CI/CD**: GitHub Actions test matrix (Python 3.11/3.12/3.13) and release workflow with PyPI trusted publishing.
 
+[0.2.0]: https://github.com/kallemickelborg/nodetracer/compare/v0.1.0...v0.2.0
 [0.1.0]: https://pypi.org/project/nodetracer/0.1.0/
