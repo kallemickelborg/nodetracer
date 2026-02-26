@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-02-26
+
+### Added
+
+- **Renderer improvements**: `nodetracer inspect` now shows edge labels inline (`[retry of X]`, `[fallback of X]`, `[branched from X]`, `[→ X]`). Standard verbosity shows annotations and errors without full I/O. Full verbosity truncates large input/output (200 chars) with `[truncated]` marker.
+
+## [0.3.0] - 2026-02-25
+
 ### Added
 
 - **HTTP auto-instrumentation**: Zero-boilerplate tracing of HTTP requests via `pip install nodetracer[http]` and `instrument_http()`. Patches requests, httpx (sync + async), and aiohttp. When a trace is active, every HTTP request creates a child span with `method`, `url`, `status_code`, `duration_ms`, and `error` (if failed). Optional `url_filter` and `exclude_urls` for redaction and URL filtering.
@@ -40,6 +48,7 @@ Initial release.
 - **Packaging**: `py.typed` marker (PEP 561), complete `__all__` exports, typed inline annotations.
 - **CI/CD**: GitHub Actions test matrix (Python 3.11/3.12/3.13) and release workflow with PyPI trusted publishing.
 
+[0.3.1]: https://pypi.org/project/nodetracer/0.3.1/
 [0.3.0]: https://pypi.org/project/nodetracer/0.3.0/
 [0.2.1]: https://pypi.org/project/nodetracer/0.2.1/
 [0.1.0]: https://pypi.org/project/nodetracer/0.1.0/

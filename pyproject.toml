@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nodetracer"
-version = "0.3.0"
+version = "0.3.1"
 description = "Framework-agnostic tracing library for AI agents. Record, inspect, and debug agent execution as a structured graph."
 readme = "README.md"
 requires-python = ">=3.11"
