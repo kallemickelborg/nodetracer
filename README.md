@@ -302,7 +302,8 @@ src/nodetracer/
 
 ### Next
 
-- [x] **HTTP auto-instrumentation** — zero-boilerplate tracing for requests, httpx, aiohttp (`pip install nodetracer[http]`)
+- [x] **HTTP auto-instrumentation** — zero-boilerplate tracing for requests, httpx, aiohttp (`pip install nodetracer[http]`) `(26/02/2026)`
+- [x] **Renderer improvements** — edge rendering (`RETRY_OF`, `FALLBACK_OF`), standard verbosity, error visibility `(26/02/2026)`
 - [ ] **Distributed trace linking** — cross-process sub-agent tracing (`parent_trace_id`, context propagation)
 - [ ] **Framework adapters** — Agno, LangGraph, CrewAI, AutoGen (`nodetracer[adapters]`, not required for core)
 - [ ] **CLI live view** (`nodetracer watch`) — real-time terminal trace via `TracerHook`
