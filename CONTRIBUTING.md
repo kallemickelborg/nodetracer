@@ -26,6 +26,16 @@ ruff check .              # lint
 ruff format --check .     # format check
 ```
 
+### Pre-commit (recommended)
+
+Install hooks so ruff runs before each commit and avoids CI failures:
+
+```bash
+uv run pre-commit install
+```
+
+Then `git commit` will run ruff format and ruff check on staged files; a failing hook aborts the commit. See [pre-commit](https://pre-commit.com/).
+
 ## How to Contribute
 
 ### Reporting Bugs
@@ -97,6 +107,12 @@ src/nodetracer/
 tests/          # pytest test suite
 examples/       # Runnable agent pattern examples
 ```
+
+## Releasing / versioning
+
+- **Single source of truth:** Version is in `pyproject.toml` only (no `__version__` in code).
+- **Merge to main:** The commit that triggers a release must (1) bump the version in `pyproject.toml` to a value **not yet published to PyPI**, and (2) add a matching `## [X.Y.Z]` section in `CHANGELOG.md`. CI will fail on push to main if either is missing, then build and publish to PyPI.
+- **One version per release:** Only one version bump per release. If multiple PRs change the version, resolve by taking the higher version or by having a single PR that bumps version and consolidates CHANGELOG entries.
 
 ## License
 

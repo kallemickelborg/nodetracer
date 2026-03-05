@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-03-05
+
+### Added
+
+- **Zero-config trace lifecycle**: `instrument_threads()` to auto-propagate trace context into `asyncio.to_thread`; `session_id` on `TraceGraph` and `Tracer.trace(session_id=...)` for grouping related traces; `auto_instrument()` one-liner to activate HTTP + thread instrumentation.
+- **CLI `view` command**: `nodetracer view <directory>` starts a local trace API server (default port 8765) serving JSON for the web viewer; `--port` and `--no-open` options.
+- **Web viewer**: React + Vite app in `viewer/` with tree, timeline, and graph views; trace list sidebar, node detail panel, session grouping; proxies `/api` to the trace server.
+
 ## [0.3.1] - 2026-02-26
 
 ### Added
@@ -48,6 +56,7 @@ Initial release.
 - **Packaging**: `py.typed` marker (PEP 561), complete `__all__` exports, typed inline annotations.
 - **CI/CD**: GitHub Actions test matrix (Python 3.11/3.12/3.13) and release workflow with PyPI trusted publishing.
 
+[0.4.0]: https://pypi.org/project/nodetracer/0.4.0/
 [0.3.1]: https://pypi.org/project/nodetracer/0.3.1/
 [0.3.0]: https://pypi.org/project/nodetracer/0.3.0/
 [0.2.1]: https://pypi.org/project/nodetracer/0.2.1/

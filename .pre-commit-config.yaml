@@ -1,0 +1,12 @@
+# See https://pre-commit.com. Install with: uv run pre-commit install
+# Runs on staged files; failing hooks abort the commit.
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.0
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+        files: ^(src/|tests/|examples/)
+      - id: ruff-format
+        files: ^(src/|tests/|examples/)
