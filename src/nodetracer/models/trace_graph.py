@@ -26,6 +26,7 @@ class TraceGraph(BaseModel):
     start_time: datetime | None = None
     end_time: datetime | None = None
     metadata: dict[str, object] = Field(default_factory=dict)
+    session_id: str | None = None
 
     _sequence_counter: int = PrivateAttr(default=0)
 

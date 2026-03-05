@@ -7,6 +7,7 @@ from collections.abc import Callable
 from .aiohttp_ import instrument_aiohttp
 from .httpx_ import instrument_httpx
 from .requests_ import instrument_requests
+from .threads import instrument_threads, uninstrument_threads
 
 
 def instrument_http(
@@ -37,4 +38,11 @@ def instrument_http(
         instrument_aiohttp(url_filter=url_filter, exclude_urls=exclude_urls)
 
 
-__all__ = ["instrument_aiohttp", "instrument_http", "instrument_httpx", "instrument_requests"]
+__all__ = [
+    "instrument_aiohttp",
+    "instrument_http",
+    "instrument_httpx",
+    "instrument_requests",
+    "instrument_threads",
+    "uninstrument_threads",
+]

@@ -10,6 +10,22 @@ from nodetracer.models import EdgeType, NodeStatus
 from nodetracer.storage import MemoryStore
 
 
+def test_trace_with_session_id_stores_on_graph() -> None:
+    """tracer.trace(name, session_id=...) stores session_id on TraceGraph."""
+    tracer = Tracer(storage=MemoryStore())
+    with tracer.trace("run", session_id="sess-123") as root:
+        pass
+    assert root.trace.session_id == "sess-123"
+
+
+def test_trace_without_session_id_defaults_to_none() -> None:
+    """tracer.trace(name) leaves session_id as None (backward compat)."""
+    tracer = Tracer(storage=MemoryStore())
+    with tracer.trace("run") as root:
+        pass
+    assert root.trace.session_id is None
+
+
 def test_trace_sync_lifecycle_and_nesting() -> None:
     with trace("agent_run") as root:
         with root.node("plan", node_type="decision") as plan:

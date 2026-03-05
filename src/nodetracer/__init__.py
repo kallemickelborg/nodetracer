@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from typing import Literal
 
+from .auto import auto_instrument
 from .core import NullHook, Span, Tracer, TracerConfig, TracerHook, trace_node
 from .core.tracer import TraceContext
 from .models import (
@@ -57,12 +58,16 @@ def configure(
     return _default_tracer
 
 
-def trace(name: str, metadata: dict[str, object] | None = None) -> TraceContext:
+def trace(
+    name: str,
+    metadata: dict[str, object] | None = None,
+    session_id: str | None = None,
+) -> TraceContext:
     """Start a trace session using the default Tracer."""
     global _default_tracer
     if _default_tracer is None:
         _default_tracer = Tracer()
-    return _default_tracer.trace(name, metadata=metadata)
+    return _default_tracer.trace(name, metadata=metadata, session_id=session_id)
 
 
 def _reset_default_tracer() -> None:
@@ -101,6 +106,7 @@ __all__ = [
     "Tracer",
     "TracerConfig",
     "TracerHook",
+    "auto_instrument",
     "configure",
     "trace",
     "trace_node",
