@@ -22,7 +22,7 @@ class TraceAPIHandler(BaseHTTPRequestHandler):
         if self.path == "/api/traces":
             self._handle_list_traces()
         elif self.path.startswith("/api/traces/"):
-            trace_id = self.path[len("/api/traces/"):]
+            trace_id = self.path[len("/api/traces/") :]
             self._handle_get_trace(trace_id)
         else:
             self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
@@ -38,15 +38,17 @@ class TraceAPIHandler(BaseHTTPRequestHandler):
                 trace = self.store.load(fid)
                 if trace is None:
                     continue
-                summaries.append({
-                    "id": fid,
-                    "trace_id": trace.trace_id,
-                    "name": trace.name,
-                    "duration_ms": trace.duration_ms,
-                    "start_time": trace.start_time.isoformat() if trace.start_time else None,
-                    "node_count": len(trace.nodes),
-                    "edge_count": len(trace.edges),
-                })
+                summaries.append(
+                    {
+                        "id": fid,
+                        "trace_id": trace.trace_id,
+                        "name": trace.name,
+                        "duration_ms": trace.duration_ms,
+                        "start_time": trace.start_time.isoformat() if trace.start_time else None,
+                        "node_count": len(trace.nodes),
+                        "edge_count": len(trace.edges),
+                    }
+                )
             except Exception:
                 summaries.append({"id": fid, "name": fid, "error": "Failed to load"})
         summaries.sort(key=lambda s: s.get("start_time") or "", reverse=True)
@@ -106,20 +108,23 @@ def run_view(
         httpd = HTTPServer(server_address, TraceAPIHandler)
     except OSError as exc:
         print(f"Error: could not start server on port {port}: {exc}", file=sys.stderr)
-        print(f"Try a different port: nodetracer view {directory} --port {port + 1}", file=sys.stderr)
+        print(
+            f"Try a different port: nodetracer view {directory} --port {port + 1}",
+            file=sys.stderr,
+        )
         return 1
 
     url = f"http://127.0.0.1:{port}"
     print(f"[nodetracer] Trace API server running at {url}")
     print(f"[nodetracer] Serving traces from: {directory.resolve()}")
-    print(f"[nodetracer] Endpoints:")
-    print(f"  GET /api/traces      — list all traces")
-    print(f"  GET /api/traces/{{id}} — get full trace by ID")
+    print("[nodetracer] Endpoints:")
+    print("  GET /api/traces      — list all traces")
+    print("  GET /api/traces/{id} — get full trace by ID")
     print()
 
     trace_count = len(store.list_traces())
     print(f"[nodetracer] Found {trace_count} trace(s)")
-    print(f"[nodetracer] Press Ctrl+C to stop")
+    print("[nodetracer] Press Ctrl+C to stop")
 
     if open_browser:
         webbrowser.open(url)

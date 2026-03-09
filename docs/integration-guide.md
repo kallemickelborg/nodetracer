@@ -206,7 +206,7 @@ with tracer.trace("agent_run") as root:
 
 Each HTTP span records: `method`, `url`, `status_code`, `duration_ms`, `error` (if failed). When no trace is active, requests run normally with zero overhead.
 
-See [HTTP auto-instrumentation plan](plans/2026-02-24-feat-http-auto-instrumentation-plan.md) for implementation details.
+Implementation lives in `src/nodetracer/instrumentation/` and the `nodetracer[http]` extra.
 
 ---
 

@@ -1,0 +1,114 @@
+# Runs on push to main: verifies version and CHANGELOG were bumped, then builds and publishes to PyPI.
+# Only runs on the default branch; does not run on forks.
+
+name: Release on push to main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  version-check:
+    name: Version and CHANGELOG check
+    runs-on: ubuntu-latest
+    if: github.repository == github.event.repository.full_name
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Get previous version
+        id: prev
+        run: |
+          git show HEAD^:pyproject.toml 2>/dev/null | sed -n 's/^version = "\(.*\)"$/\1/p' > prev.txt || echo "0.0.0" > prev.txt
+          echo "prev=$(cat prev.txt)" >> $GITHUB_OUTPUT
+
+      - name: Get current version
+        id: curr
+        run: |
+          sed -n 's/^version = "\(.*\)"$/\1/p' pyproject.toml > curr.txt
+          echo "curr=$(cat curr.txt)" >> $GITHUB_OUTPUT
+
+      - name: Require version increase
+        env:
+          PREV: ${{ steps.prev.outputs.prev }}
+          CURR: ${{ steps.curr.outputs.curr }}
+        run: |
+          python3 << 'EOF'
+          import os
+          def ver_tuple(s):
+              parts = s.strip().split(".")[:3]
+              return tuple(int(p) if p.isdigit() else 0 for p in parts)
+          prev = ver_tuple(os.environ["PREV"])
+          curr = ver_tuple(os.environ["CURR"])
+          if curr <= prev:
+              raise SystemExit(
+                  f"Version in pyproject.toml ({os.environ['CURR']!r}) must be greater than previous ({os.environ['PREV']!r}). Bump version and push."
+              )
+          EOF
+
+      - name: Require CHANGELOG entry for version
+        run: |
+          CURR="${{ steps.curr.outputs.curr }}"
+          if ! grep -q "## \[$CURR\]" CHANGELOG.md; then
+            echo "CHANGELOG.md must contain a section '## [$CURR]' for this version."
+            exit 1
+          fi
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: version-check
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --group dev
+
+      - name: Run tests
+        run: uv run pytest
+
+  publish:
+    name: Publish to PyPI
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.repository == github.event.repository.full_name
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install Python
+        run: uv python install 3.13
+
+      - name: Clean and build
+        run: |
+          rm -rf dist/
+          uv build --no-sources
+
+      - name: Smoke test (wheel)
+        run: |
+          uv run --isolated --no-project --with dist/*.whl -- python -c "from nodetracer import Tracer, Node, TraceGraph"
+
+      - name: Smoke test (source distribution)
+        run: |
+          uv run --isolated --no-project --with dist/*.tar.gz -- python -c "from nodetracer import Tracer, Node, TraceGraph"
+
+      - name: Publish
+        run: uv publish --trusted-publishing always
